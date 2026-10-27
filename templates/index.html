@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InsightData - Turn Your Data Into Clear, Meaningful Answers</title>
+  <!-- Google Fonts for crisp modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Chart.js for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="app-container">
+    <!-- FLOATING TOAST NOTIFICATION FOR USER FEEDBACK -->
+    <div id="toastNotification" class="toast-notification hidden" role="alert">
+      <div class="toast-icon" id="toastIcon"></div>
+      <div class="toast-content">
+        <div class="toast-title" id="toastTitle">Notification</div>
+        <div class="toast-message" id="toastMessage"></div>
+      </div>
+      <button class="toast-close" id="toastCloseBtn" type="button" aria-label="Close notification">&times;</button>
+    </div>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="top-nav">
+      <div class="brand">
+        <!-- Exact InsightData Logo with integrated 'S' on tallest bar -->
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="InsightData Logo" class="brand-logo-img">
+        <span class="brand-name">Insight<span class="brand-highlight">Data</span></span>
+      </div>
+
+      <!-- View tabs: enabled once a dataset / first result exists -->
+      <nav class="view-tabs" aria-label="Views">
+        <button class="state-pill" id="tabDataset" data-state="dataset-preview" disabled title="Upload a dataset first">Dataset Preview</button>
+        <button class="state-pill" id="tabSolution" data-state="split-results" disabled title="Ask a question first">Solution</button>
+      </nav>
+    </header>
+
+    <!-- MAIN WORKSPACE CONTENT AREA -->
+    <main class="main-content">
+      
+      <!-- VIEW 1: INITIAL SCREEN (HERO STATE) -->
+      <section id="view-initial" class="view-panel active-view">
+        <div class="hero-center">
+          <div class="sparkle-badge">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="#38BDF8"/>
+            </svg>
+          </div>
+          <h1 class="hero-title">
+            Turn your data into<br>
+            <span class="gradient-text">clear, meaningful answers.</span>
+          </h1>
+          <p class="hero-subtitle">
+            Upload your dataset and ask questions in plain English.<br>
+            Let AI and data do the rest.
+          </p>
+        </div>
+      </section>
+
+      <!-- VIEW 2: DATASET PREVIEW (RIGHT-SIDE PANEL STATE) -->
+      <section id="view-dataset-preview" class="view-panel">
+        <div class="preview-layout">
+          <!-- Left side: empty-state shown after upload, before the first question -->
+          <div class="preview-left">
+            <div id="emptyState" class="empty-state hidden">
+              <div class="empty-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="#38BDF8"/>
+                </svg>
+              </div>
+              <h2 class="empty-title">Your dataset is ready!</h2>
+              <p class="empty-text">Your data has been uploaded successfully. Ask a question to discover insights, compare values, calculate totals, or explore trends.</p>
+              <div class="example-chips" id="exampleChips"></div>
+            </div>
+          </div>
+
+          <!-- Right side: Dataset Info & Table Preview -->
+          <div class="dataset-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span>Dataset</span>
+              </div>
+              <button class="panel-close-btn" title="Close preview">×</button>
+            </div>
+
+            <!-- Active File Info Card -->
+            <div class="file-card">
+              <div class="file-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                  <polyline points="13 2 13 9 20 9"></polyline>
+                </svg>
+              </div>
+              <div class="file-meta">
+                <div class="file-name-row">
+                  <span class="file-name" id="datasetFileName">campus_energy_water.csv</span>
+                  <span class="badge-format" id="datasetFileType">CSV</span>
+                </div>
+                <div class="file-specs" id="datasetFileSpecs">1.2 MB &bull; 5 columns &bull; 100 rows</div>
+              </div>
+            </div>
+
+            <!-- Upload Success Badge -->
+            <div class="status-badge success" id="uploadStatusBadge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span id="uploadStatusText">Dataset uploaded successfully</span>
+            </div>
+
+            <!-- Compact Data Table Preview -->
+            <div class="preview-section">
+              <div class="section-label">Preview (First 5 Rows)</div>
+              <div class="table-container">
+                <table class="preview-table">
+                  <thead id="previewTableHead">
+                    <tr>
+                      <th>Building</th>
+                      <th>Electricity (kWh)</th>
+                      <th>Water (L)</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody id="previewTableBody">
+                    <tr>
+                      <td>Block A</td>
+                      <td>1250</td>
+                      <td>320</td>
+                      <td>2025-04-01</td>
+                    </tr>
+                    <tr>
+                      <td>Block B</td>
+                      <td>960</td>
+                      <td>410</td>
+                      <td>2025-04-01</td>
+                    </tr>
+                    <tr>
+                      <td>Block C</td>
+                      <td>760</td>
+                      <td>290</td>
+                      <td>2025-04-01</td>
+                    </tr>
+                    <tr>
+                      <td>Block D</td>
+                      <td>1340</td>
+                      <td>500</td>
+                      <td>2025-04-01</td>
+                    </tr>
+                    <tr>
+                      <td>Block E</td>
+                      <td>1100</td>
+                      <td>360</td>
+                      <td>2025-04-01</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: TWO-PANEL RESULTS SPLIT VIEW (ANSWER & CALCULATION) -->
+      <section id="view-split-results" class="view-panel">
+        <div class="split-layout">
+          <!-- LEFT PANEL: ANSWER AND VISUALIZATION -->
+          <div class="panel-box left-panel">
+            <div class="answer-badge">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill="#38BDF8"/>
+              </svg>
+              <span>Answer</span>
+            </div>
+
+            <h2 class="direct-answer-text" id="directAnswerText">
+              Building C consumed the most electricity with 1,340 kWh.
+            </h2>
+
+            <div class="chart-wrapper" id="chartWrapper">
+              <div class="chart-header-row">
+                <span class="chart-title" id="chartTitle">Electricity Consumption by Building</span>
+              </div>
+              <div class="chart-canvas-box">
+                <canvas id="electricityChart"></canvas>
+              </div>
+            </div>
+
+            <div class="insight-callout" id="insightCallout">
+              <div class="callout-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <p class="callout-text" id="insightCalloutText">
+                The data shows that Building C has the highest electricity usage at 1,340 kWh.
+              </p>
+            </div>
+          </div>
+
+          <!-- RIGHT PANEL: CALCULATION DETAILS -->
+          <div class="panel-box right-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                  <line x1="8" y1="6" x2="16" y2="6"></line>
+                  <line x1="16" y1="14" x2="16" y2="18"></line>
+                  <path d="M16 10h.01"></path>
+                  <path d="M12 10h.01"></path>
+                  <path d="M8 10h.01"></path>
+                  <path d="M12 14h.01"></path>
+                  <path d="M8 14h.01"></path>
+                  <path d="M12 18h.01"></path>
+                  <path d="M8 18h.01"></path>
+                </svg>
+                <span>Calculation Details</span>
+              </div>
+              <button class="panel-close-btn" title="Close details">×</button>
+            </div>
+
+            <div class="calculation-content" id="calculationContent">
+              <!-- Dynamically populated or default preview -->
+              <div class="calc-step-block">
+                <div class="step-title">1. Find the maximum value in the Electricity column</div>
+                <div class="formula-line">
+                  <span class="formula-func">max()</span>
+                  <span class="formula-arrow">&rarr;</span>
+                  <span class="formula-val highlighted">1,340 kWh</span>
+                </div>
+                <div class="formula-line sub">
+                  <span class="formula-label">Building</span>
+                  <span class="formula-arrow">&rarr;</span>
+                  <span class="formula-val">C</span>
+                </div>
+              </div>
+
+              <div class="calc-step-block">
+                <div class="step-title">2. Related data</div>
+                <div class="table-container">
+                  <table class="calc-table">
+                    <thead>
+                      <tr>
+                        <th>Building</th>
+                        <th>Electricity (kWh)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>A</td><td>1250</td></tr>
+                      <tr><td>B</td><td>980</td></tr>
+                      <tr class="highlight-row"><td><span class="active-dot"></span>C</td><td>1340</td></tr>
+                      <tr><td>D</td><td>760</td></tr>
+                      <tr><td>E</td><td>1100</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM CHAT INPUT BAR (PERSISTENT ACROSS ALL VIEWS) -->
+    <footer class="bottom-bar-wrapper">
+      <div class="chat-bar-container">
+        <!-- Plus (+) Upload Action Button -->
+        <div class="upload-dropdown-anchor">
+          <button id="plusBtn" class="plus-btn" title="Upload Dataset" aria-label="Upload dataset">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+
+          <!-- Upload Dataset Popup Menu (accessible when needed) -->
+          <div id="uploadMenu" class="upload-popover hidden">
+            <div class="popover-item" id="uploadOption">
+              <div class="popover-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="popover-text">
+                <div class="popover-title">Upload Dataset</div>
+                <div class="popover-sub">Supported formats: CSV, Excel (.csv, .xlsx, .xls)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden file input triggered by '+' button and 'Upload Dataset' option -->
+          <input type="file" id="datasetFileInput" accept=".csv, .xlsx, .xls, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none;">
+        </div>
+
+        <!-- Question Input Field -->
+        <div class="input-field-wrapper">
+          <input 
+            type="text" 
+            id="questionInput" 
+            class="chat-input" 
+            placeholder="Ask a question about your data..."
+            autocomplete="off"
+          >
+          <!-- Clear (×) button: visible only when the input has text -->
+          <button id="clearBtn" class="clear-btn hidden" type="button" title="Clear question" aria-label="Clear question">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Send Button -->
+        <button id="sendBtn" class="send-btn" title="Send question" aria-label="Send">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Subtle, readable supported file formats helper text -->
+      <div class="supported-formats-hint">
+        Supported formats: CSV, Excel (.csv, .xlsx, .xls)
+      </div>
+    </footer>
+  </div>
+
+  <!-- JavaScript logic -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
